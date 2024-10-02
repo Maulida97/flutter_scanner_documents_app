@@ -1,11 +1,21 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 // ignore_for_file: camel_case_types, prefer_typing_uninitialized_variables
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../core/colors.dart';
+import '../data/datasources/document_local_datasource.dart';
+import '../data/models/document_model.dart';
 
 class SaveDocumentsPage extends StatefulWidget {
-  const SaveDocumentsPage({Key? key}) : super(key: key);
+  final String pathImage;
+  const SaveDocumentsPage({
+    Key? key,
+    required this.pathImage,
+  }) : super(key: key);
 
   @override
   State<SaveDocumentsPage> createState() => _SaveDocumentsPageState();
@@ -36,13 +46,12 @@ class _SaveDocumentsPageState extends State<SaveDocumentsPage> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          // Image.file(File(widget.pathImage)),
-          // SizedBox(
-          //     width: double.infinity,
-          //     height: 200,
-          //     child: ClipRRect(
-          //         borderRadius: BorderRadius.circular(16),
-          //         child: Image.file(File(widget.pathImage)))),
+          SizedBox(
+              width: double.infinity,
+              height: 200,
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.file(File(widget.pathImage)))),
           const SizedBox(height: 16.0),
           TextFormField(
             controller: nameController,
@@ -74,13 +83,13 @@ class _SaveDocumentsPageState extends State<SaveDocumentsPage> {
       bottomNavigationBar: InkWell(
         onTap: () {
           // save document
-          // DocumentModel model = DocumentModel(
-          //   name: nameController!.text,
-          //   path: widget.pathImage,
-          //   category: selectCategory!,
-          //   createdAt: DateFormat('yyyy-MM-ddTHH:mm:ss').format(DateTime.now()),
-          // );
-          // // DocumentLocalDatasource.instance.saveDocument(model);
+          DocumentModel model = DocumentModel(
+            name: nameController!.text,
+            path: widget.pathImage,
+            category: selectCategory!,
+            createdAt: DateFormat('yyyy-MM-ddTHH:mm:ss').format(DateTime.now()),
+          );
+          DocumentLocalDatasource.instance.saveDocument(model);
           Navigator.pop(
             context,
           );

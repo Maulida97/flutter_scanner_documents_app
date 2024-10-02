@@ -1,6 +1,8 @@
 // ignore_for_file: camel_case_types, prefer_typing_uninitialized_variables
 
 import 'package:flutter/material.dart';
+import 'package:google_mlkit_document_scanner/google_mlkit_document_scanner.dart';
+import 'package:scanner_project/data/datasources/document_local_datasource.dart';
 import 'package:scanner_project/pages/latest_documents.dart';
 import 'package:scanner_project/pages/menu_categories.dart';
 import 'package:scanner_project/pages/save_documents_page.dart';
@@ -8,6 +10,7 @@ import 'package:scanner_project/pages/save_documents_page.dart';
 import '../core/colors.dart';
 import '../core/spaces.dart';
 import '../core/title_content.dart';
+import '../data/models/document_model.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -17,11 +20,26 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  List<DocumentModel> documents = [];
+
+  String? pathImage;
+
+  loadData() async {
+    documents = await DocumentLocalDatasource.instance.getAllDocuments();
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Scanner fKartu"),
+        title: const Text("Scanner Kartu"),
         centerTitle: true,
         elevation: 2,
         // actions: const [],
@@ -50,11 +68,38 @@ class _HomePageState extends State<HomePage> {
                   height: 8,
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
+                  onPressed: () async {
+                    DocumentScannerOptions documentOptions =
+                        DocumentScannerOptions(
+                      documentFormat: DocumentFormat.jpeg,
+                      mode: ScannerMode.filter,
+                      pageLimit: 1,
+                      isGalleryImport: true,
+                    );
+
+                    final documentScanner =
+                        DocumentScanner(options: documentOptions);
+                    DocumentScanningResult result =
+                        await documentScanner.scanDocument();
+                    final pdf = result.pdf;
+                    final images = result.images;
+
+                    // log('PDF: $pdf');
+                    // log('Images: $images');
+                    pathImage = images[0];
+                    await Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const SaveDocumentsPage()));
+                            builder: (context) => SaveDocumentsPage(
+                                  pathImage: pathImage!,
+                                )));
+                    loadData();
+                    // Navigator.push(
+                    //     context,
+                    //     MaterialPageRoute(
+                    //         builder: (context) =>
+                    //             SaveDocumentsPage(pathImage: pathImage!)));
+                    // loadData();
                   },
                   child: const Text("scan Documents"),
                 )
@@ -80,7 +125,10 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           const SpaceHeight(12.0),
-          const Expanded(child: LatestDocumentsPages()),
+          Expanded(
+              child: LatestDocumentsPages(
+            documents: documents,
+          )),
         ],
       ),
     );
